@@ -7,33 +7,23 @@ final class AppState: ObservableObject {
 		NSApp.mainMenu?.addItem(testMenuItem)
 
 		let testMenu = NSMenu()
-		testMenu.title = "Test"
+		testMenu.title = "TODO: Test my current shortcuts"
 		testMenuItem.submenu = testMenu
 
-		testMenu.addCallbackItem("Shortcut 1") { [weak self] in
-			self?.alert(1)
-		}
-			.setShortcut(for: .testShortcut1)
-
-		testMenu.addCallbackItem("Shortcut 2") { [weak self] in
-			self?.alert(2)
-		}
-			.setShortcut(for: .testShortcut2)
-
-		testMenu.addCallbackItem("Shortcut 3") { [weak self] in
-			self?.alert(3)
-		}
-			.setShortcut(for: .testShortcut3)
-
-		testMenu.addCallbackItem("Shortcut 4") { [weak self] in
-			self?.alert(4)
-		}
-			.setShortcut(for: .testShortcut4)
+//		testMenu.addCallbackItem("Shortcut 1") { [weak self] in
+//			self?.alert(1)
+//		}
+//			.setShortcut(for: .testShortcut1)
+//
+//		testMenu.addCallbackItem("Shortcut 2") { [weak self] in
+//			self?.alert(2)
+//		}
+//			.setShortcut(for: .fuckingSuperLongTestShortcut)
 	}
 
-	private func alert(_ number: Int) {
-		let alert = NSAlert()
-		alert.messageText = "Shortcut \(number) menu item action triggered!"
-		alert.runModal()
-	}
+//	private func alert(_ number: Int) {
+//		let alert = NSAlert()
+//		alert.messageText = "Shortcut \(number) menu item action triggered!"
+//		alert.runModal()
+//	}
 }
