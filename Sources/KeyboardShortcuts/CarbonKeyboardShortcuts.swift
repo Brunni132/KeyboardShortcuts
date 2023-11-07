@@ -131,7 +131,7 @@ enum CarbonKeyboardShortcuts {
 		onKeyUp: @escaping (KeyboardShortcuts.Shortcut) -> Void
 	) {
 		hotKeyId += 1
-
+        
 		var eventHotKey: EventHotKeyRef?
 		let registerError = RegisterEventHotKey(
 			UInt32(shortcut.carbonKeyCode),

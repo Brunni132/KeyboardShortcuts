@@ -4,6 +4,19 @@ import KeyboardShortcuts
 // Location of the save file:
 // Users/florian.bronnimann/Library/Containers/com.sindresorhus.KeyboardShortcutsExample/Data/Library/Preferences/com.sindresorhus.KeyboardShortcutsExample.plist
 
+extension Binding {
+//    func whenSet(execute: @escaping (Value) -> Void) -> Binding {
+    func whenSet(execute: @escaping () -> Void) -> Binding {
+        return Binding(
+            get: { self.wrappedValue },
+            set: {
+                self.wrappedValue = $0
+                execute()
+            }
+        )
+    }
+}
+
 private struct DynamicShortcut: View {
 	private struct Shortcut: Hashable, Identifiable {
 		var id: String
@@ -42,6 +55,8 @@ private struct DynamicShortcut: View {
 	@State private var shortcut = Self.shortcuts.first!
 	@State private var isPressed1 = false
     @State private var isPressed2 = false
+    @State private var useFirstSet = true
+    @State private var useSecondSet = true
 
 	var body: some View {
 		VStack {
@@ -49,10 +64,14 @@ private struct DynamicShortcut: View {
 				.bold()
 				.padding(.bottom, 10)
 			VStack {
+                Toggle("Use first set of keys", isOn: $useFirstSet.whenSet { updateShortcuts() })
+                Toggle("Use second set of keys", isOn: $useSecondSet.whenSet { updateShortcuts() })
 				Picker("Select shortcut:", selection: $shortcut) {
-					ForEach(Self.shortcuts) {
-						Text($0.id)
-							.tag($0)
+					ForEach(Self.shortcuts) { shortcut in
+						Text(shortcut.id)
+							.tag(shortcut)
+                            .onKeyboardShortcut(shortcut.name1, type: .keyDown) { openApp(app: shortcut.appToOpen) }
+                            .onKeyboardShortcut(shortcut.name2, type: .keyDown) { openApp(app: shortcut.appToOpen) }
 					}
 				}
 				Divider()
@@ -66,38 +85,9 @@ private struct DynamicShortcut: View {
 			.onChange(of: shortcut) { [oldValue = shortcut] in
 				onShortcutChange(oldValue: oldValue, newValue: $0)
 			}
-            .onKeyboardShortcut(DynamicShortcut.shortcuts[0].name1, type: .keyDown) { openApp(app: DynamicShortcut.shortcuts[0].appToOpen) }
-            .onKeyboardShortcut(DynamicShortcut.shortcuts[0].name2, type: .keyDown) { openApp(app: DynamicShortcut.shortcuts[0].appToOpen) }
-            .onKeyboardShortcut(DynamicShortcut.shortcuts[1].name1, type: .keyDown) { openApp(app: DynamicShortcut.shortcuts[1].appToOpen) }
-            .onKeyboardShortcut(DynamicShortcut.shortcuts[1].name2, type: .keyDown) { openApp(app: DynamicShortcut.shortcuts[1].appToOpen) }
-            .onKeyboardShortcut(DynamicShortcut.shortcuts[2].name1, type: .keyDown) { openApp(app: DynamicShortcut.shortcuts[2].appToOpen) }
-            .onKeyboardShortcut(DynamicShortcut.shortcuts[2].name2, type: .keyDown) { openApp(app: DynamicShortcut.shortcuts[2].appToOpen) }
-            .onKeyboardShortcut(DynamicShortcut.shortcuts[3].name1, type: .keyDown) { openApp(app: DynamicShortcut.shortcuts[3].appToOpen) }
-            .onKeyboardShortcut(DynamicShortcut.shortcuts[3].name2, type: .keyDown) { openApp(app: DynamicShortcut.shortcuts[3].appToOpen) }
-            .onKeyboardShortcut(DynamicShortcut.shortcuts[4].name1, type: .keyDown) { openApp(app: DynamicShortcut.shortcuts[4].appToOpen) }
-            .onKeyboardShortcut(DynamicShortcut.shortcuts[4].name2, type: .keyDown) { openApp(app: DynamicShortcut.shortcuts[4].appToOpen) }
-            .onKeyboardShortcut(DynamicShortcut.shortcuts[5].name1, type: .keyDown) { openApp(app: DynamicShortcut.shortcuts[5].appToOpen) }
-            .onKeyboardShortcut(DynamicShortcut.shortcuts[5].name2, type: .keyDown) { openApp(app: DynamicShortcut.shortcuts[5].appToOpen) }
-            .onKeyboardShortcut(DynamicShortcut.shortcuts[6].name1, type: .keyDown) { openApp(app: DynamicShortcut.shortcuts[6].appToOpen) }
-            .onKeyboardShortcut(DynamicShortcut.shortcuts[6].name2, type: .keyDown) { openApp(app: DynamicShortcut.shortcuts[6].appToOpen) }
-            .onKeyboardShortcut(DynamicShortcut.shortcuts[7].name1, type: .keyDown) { openApp(app: DynamicShortcut.shortcuts[7].appToOpen) }
-            .onKeyboardShortcut(DynamicShortcut.shortcuts[7].name2, type: .keyDown) { openApp(app: DynamicShortcut.shortcuts[7].appToOpen) }
-            .onKeyboardShortcut(DynamicShortcut.shortcuts[8].name1, type: .keyDown) { openApp(app: DynamicShortcut.shortcuts[8].appToOpen) }
-            .onKeyboardShortcut(DynamicShortcut.shortcuts[8].name2, type: .keyDown) { openApp(app: DynamicShortcut.shortcuts[8].appToOpen) }
-            .onKeyboardShortcut(DynamicShortcut.shortcuts[9].name1, type: .keyDown) { openApp(app: DynamicShortcut.shortcuts[9].appToOpen) }
-            .onKeyboardShortcut(DynamicShortcut.shortcuts[9].name2, type: .keyDown) { openApp(app: DynamicShortcut.shortcuts[9].appToOpen) }
-            .onKeyboardShortcut(DynamicShortcut.shortcuts[10].name1, type: .keyDown) { openApp(app: DynamicShortcut.shortcuts[10].appToOpen) }
-            .onKeyboardShortcut(DynamicShortcut.shortcuts[10].name2, type: .keyDown) { openApp(app: DynamicShortcut.shortcuts[10].appToOpen) }
-            .onKeyboardShortcut(DynamicShortcut.shortcuts[11].name1, type: .keyDown) { openApp(app: DynamicShortcut.shortcuts[11].appToOpen) }
-            .onKeyboardShortcut(DynamicShortcut.shortcuts[11].name2, type: .keyDown) { openApp(app: DynamicShortcut.shortcuts[11].appToOpen) }
-            .onKeyboardShortcut(DynamicShortcut.shortcuts[12].name1, type: .keyDown) { openApp(app: DynamicShortcut.shortcuts[12].appToOpen) }
-            .onKeyboardShortcut(DynamicShortcut.shortcuts[12].name2, type: .keyDown) { openApp(app: DynamicShortcut.shortcuts[12].appToOpen) }
-            .onKeyboardShortcut(DynamicShortcut.shortcuts[13].name1, type: .keyDown) { openApp(app: DynamicShortcut.shortcuts[13].appToOpen) }
-            .onKeyboardShortcut(DynamicShortcut.shortcuts[13].name2, type: .keyDown) { openApp(app: DynamicShortcut.shortcuts[13].appToOpen) }
-            .onKeyboardShortcut(DynamicShortcut.shortcuts[14].name1, type: .keyDown) { openApp(app: DynamicShortcut.shortcuts[14].appToOpen) }
-            .onKeyboardShortcut(DynamicShortcut.shortcuts[14].name2, type: .keyDown) { openApp(app: DynamicShortcut.shortcuts[14].appToOpen) }
+            .onAppear { updateShortcuts() }
     }
-    
+        
     private func openApp(app: String) {
 //        let _ = Process.launchedProcess(launchPath: app, arguments: [])
         let url = NSURL(fileURLWithPath: app, isDirectory: true) as URL
@@ -108,6 +98,13 @@ private struct DynamicShortcut: View {
         NSWorkspace.shared.openApplication(at: url,
                                            configuration: configuration,
                                            completionHandler: nil)
+    }
+    
+    private func updateShortcuts() {
+        DynamicShortcut.shortcuts.forEach { s in
+            if (useFirstSet) { KeyboardShortcuts.enable(s.name1) } else { KeyboardShortcuts.disable(s.name1) }
+            if (useSecondSet) { KeyboardShortcuts.enable(s.name2) } else { KeyboardShortcuts.disable(s.name2) }
+        }
     }
 
 	private func onShortcutChange(oldValue: Shortcut, newValue: Shortcut) {
