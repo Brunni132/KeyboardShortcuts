@@ -1,9 +1,12 @@
 import SwiftUI
 import KeyboardShortcuts
 
-// Location of the save file:
-// Users/florian.bronnimann/Library/Containers/com.sindresorhus.KeyboardShortcutsExample/Data/Library/Preferences/com.sindresorhus.KeyboardShortcutsExample.plist
-
+/**
+ Location of the save file:
+ /Users/florian.bronnimann/Library/Containers/com.sindresorhus.KeyboardShortcutsExample/Data/Library/Preferences/com.sindresorhus.KeyboardShortcutsExample.plist
+ Or when not containarized:
+ /Users/florian.bronnimann/Library/Preferences/com.sindresorhus.KeyboardShortcutsExample.plist
+*/
 extension Binding {
 //    func whenSet(execute: @escaping (Value) -> Void) -> Binding {
     func whenSet(execute: @escaping () -> Void) -> Binding {
@@ -22,15 +25,37 @@ private struct DynamicShortcut: View {
 		var id: String
 		var name1: KeyboardShortcuts.Name
         var name2: KeyboardShortcuts.Name
-        var appToOpen: String
+        var appToOpen: String? = nil
+        var shellCommandArgs: [String]? = nil
+        var toggleSet1 = false
+        var openBluetoothSettings = false
 
-        public init(id: String, app: String) {
+        public init(id: String) {
             self.id = id
-            appToOpen = app
             name1 = KeyboardShortcuts.Name("sc" + id + "#1")
             name2 = KeyboardShortcuts.Name("sc" + id + "#2")
         }
-	}
+
+        public init(id: String, app: String) {
+            self.init(id: id)
+            appToOpen = app
+        }
+
+        public init(id: String, toggleSet1: Bool) {
+            self.init(id: id)
+            self.toggleSet1 = toggleSet1
+        }
+
+        public init(id: String, openBluetoothSettings: Bool) {
+            self.init(id: id)
+            self.openBluetoothSettings = openBluetoothSettings
+        }
+
+        public init(id: String, shellCmd: [String]) {
+            self.init(id: id)
+            shellCommandArgs = shellCmd
+        }
+    }
     
 	private static let shortcuts = [
         Shortcut(id: "Finder", app: "/System/Library/CoreServices/Finder.app"),
@@ -50,6 +75,9 @@ private struct DynamicShortcut: View {
         Shortcut(id: "YouTube", app: "/Users/florian.bronnimann/Applications/Chrome Apps.localized/YouTube.app"),
         Shortcut(id: "Activity Monitor", app: "/System/Applications/Utilities/Activity Monitor.app"),
         Shortcut(id: "Battery", app: "/Users/florian.bronnimann/Applications/coconutBattery.app"),
+//        Shortcut(id: "Mute Mic", shellCmd: ["/usr/bin/osascript", "/Users/florian.bronnimann/Software/mute-toggle.txt"]),
+        Shortcut(id: "Toggle first set of keys", toggleSet1: true),
+        Shortcut(id: "Open Bluetooth Settings", openBluetoothSettings: true),
 	]
 
 	@State private var shortcut = Self.shortcuts.first!
@@ -70,8 +98,8 @@ private struct DynamicShortcut: View {
 					ForEach(Self.shortcuts) { shortcut in
 						Text(shortcut.id)
 							.tag(shortcut)
-                            .onKeyboardShortcut(shortcut.name1, type: .keyDown) { openApp(app: shortcut.appToOpen) }
-                            .onKeyboardShortcut(shortcut.name2, type: .keyDown) { openApp(app: shortcut.appToOpen) }
+                            .onKeyboardShortcut(shortcut.name1, type: .keyDown) { run(shortcut: shortcut) }
+                            .onKeyboardShortcut(shortcut.name2, type: .keyDown) { run(shortcut: shortcut) }
 					}
 				}
 				Divider()
@@ -87,17 +115,73 @@ private struct DynamicShortcut: View {
 			}
             .onAppear { updateShortcuts() }
     }
-        
+    
+    private func runShellCommand(command: Array<String>) {
+        let task = Process()
+
+        //the path to the external program you want to run
+        let executableURL = URL(fileURLWithPath: command[0])
+        task.executableURL = executableURL
+
+        //use pipe to get the execution program's output
+        let pipe = Pipe()
+        task.standardOutput = pipe
+
+        //this one helps set the directory the executable operates from
+//        task.currentDirectoryURL = URL(fileURLWithPath: "/Users/florian.bronnimann/")
+
+        //all the arguments to the executable
+        let args = Array(command.dropFirst())
+        task.arguments = args
+
+        //what to call once the process completes
+        task.terminationHandler = {
+            _ in
+            print("process run complete.")
+        }
+
+        try! task.run()
+        task.waitUntilExit()
+
+        //all this code helps you capture the output so you can, for e.g., show the user
+        let d = pipe.fileHandleForReading.readDataToEndOfFile()
+        let ds = String (data: d, encoding: String.Encoding.utf8)
+        print("terminal output: \(ds!)")
+
+        print("execution complete...")
+    }
+    
     private func openApp(app: String) {
-//        let _ = Process.launchedProcess(launchPath: app, arguments: [])
         let url = NSURL(fileURLWithPath: app, isDirectory: true) as URL
 
-        let path = "/bin"
         let configuration = NSWorkspace.OpenConfiguration()
-        configuration.arguments = [path]
+        configuration.arguments = []
         NSWorkspace.shared.openApplication(at: url,
                                            configuration: configuration,
                                            completionHandler: nil)
+    }
+    
+    private func run(shortcut: Shortcut) {
+        if (shortcut.appToOpen != nil) {
+            // FIXME: why do I need the `!` ?
+            openApp(app: shortcut.appToOpen!)
+        }
+        else if (shortcut.shellCommandArgs != nil) {
+            runShellCommand(command: shortcut.shellCommandArgs!)
+        }
+        else if (shortcut.toggleSet1) {
+            useFirstSet = !useFirstSet
+            updateShortcuts()
+        }
+        else if (shortcut.openBluetoothSettings) {
+//            if let urlString = URL(string: "x-apple.systempreferences:com.apple.preferences.Bluetooth") {
+            if #available(macOS 13.0, *) {
+                let url = URL(filePath: "/System/Library/PreferencePanes/Bluetooth.prefPane")
+                NSWorkspace.shared.open(url)
+            } else {
+                print("Unsupported")
+            }
+        }
     }
     
     private func updateShortcuts() {
