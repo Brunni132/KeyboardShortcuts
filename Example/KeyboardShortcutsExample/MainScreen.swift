@@ -66,6 +66,8 @@ private struct DynamicShortcut: View {
         Shortcut(id: "Terminal", app: "/Users/florian.bronnimann/Applications/iTerm.app"),
         Shortcut(id: "SublimeText", app: "/Users/florian.bronnimann/Applications/Sublime Text.app"),
         Shortcut(id: "Notes", app: "/System/Applications/Notes.app"),
+        Shortcut(id: "LibreOffice", app: "/Users/florian.bronnimann/Applications/LibreOffice.app"),
+        Shortcut(id: "Google Docs", app: "/Users/florian.bronnimann/Applications/Chrome Apps.localized/Docs.app"),
         Shortcut(id: "Code", app: "/Applications/Visual Studio Code.app"),
         Shortcut(id: "Slack", app: "/Applications/Slack.app"),
         Shortcut(id: "Timer", app: "/System/Applications/Clock.app"),
@@ -78,6 +80,8 @@ private struct DynamicShortcut: View {
 //        Shortcut(id: "Mute Mic", shellCmd: ["/usr/bin/osascript", "/Users/florian.bronnimann/Software/mute-toggle.txt"]),
         Shortcut(id: "Toggle first set of keys", toggleSet1: true),
         Shortcut(id: "Open Bluetooth Settings", openBluetoothSettings: true),
+        Shortcut(id: "Confluence", app: "/Users/florian.bronnimann/Applications/Chrome Apps.localized/Confluence.app"),
+        Shortcut(id: "Jira", app: "/Users/florian.bronnimann/Applications/Chrome Apps.localized/Jira.app"),
 	]
 
 	@State private var shortcut = Self.shortcuts.first!
@@ -171,6 +175,15 @@ private struct DynamicShortcut: View {
         }
         else if (shortcut.toggleSet1) {
             useFirstSet = !useFirstSet
+
+            let notification = NSUserNotification()
+            notification.title = "Keyboard shortcuts"
+            notification.subtitle = (useFirstSet ? "✅" : "🚫") + " First set: " + (useFirstSet ? "enabled" : "disabled")
+            notification.soundName = NSUserNotificationDefaultSoundName
+//            notification.deliveryDate = Date(timeIntervalSinceNow: 5)
+//            NSUserNotificationCenter.default.scheduleNotification(notification)
+            NSUserNotificationCenter.default.deliver(notification)
+
             updateShortcuts()
         }
         else if (shortcut.openBluetoothSettings) {
